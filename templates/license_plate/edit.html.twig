@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Edit LicensePlate{% endblock %}
+
+{% block body %}
+    <h1>Edit LicensePlate</h1>
+
+    {{ include('license_plate/_form.html.twig', {'button_label': 'Update'}) }}
+
+    <a href="{{ path('license_plate_index') }}">back to list</a>
+
+    {{ include('license_plate/_delete_form.html.twig') }}
+{% endblock %}

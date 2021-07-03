@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}LicensePlate{% endblock %}
+
+{% block body %}
+    <h1>LicensePlate</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ license_plate.id }}</td>
+            </tr>
+            <tr>
+                <th>License_plate</th>
+                <td>{{ license_plate.licensePlate }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('license_plate_index') }}">back to list</a>
+
+    <a href="{{ path('license_plate_edit', {'id': license_plate.id}) }}">edit</a>
+
+    {{ include('license_plate/_delete_form.html.twig') }}
+{% endblock %}
