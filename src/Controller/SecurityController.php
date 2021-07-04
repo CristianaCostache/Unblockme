@@ -9,17 +9,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class SecurityController extends AbstractController
 {
     /**
-     * @Route("/login", name="app_login")
+     * @Route("/", name="app_login")
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
          if ($this->getUser()) {
-             return $this->redirectToRoute('license_plate_index');
+             return $this->redirectToRoute('home');
          }
 
         // get the login error if there is one
@@ -53,7 +55,15 @@ class SecurityController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            return $this->redirectToRoute('home');
+            // login the user after registration
+            $token = new UsernamePasswordToken($user, null, 'main',$user->getRoles());
+            $this->get('security.token_storage')->setToken($token);
+            $this->get('session')->set('_security_main', serialize($token));
+
+//            $event = new InteractiveLoginEvent($request, $token);
+//            $this->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('user/new.html.twig', [

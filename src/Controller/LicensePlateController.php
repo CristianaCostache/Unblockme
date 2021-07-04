@@ -17,9 +17,18 @@ class LicensePlateController extends AbstractController
     public function index(LicensePlateRepository $licensePlateRepository): Response
     {
         return $this->render('license_plate/index.html.twig', [
-            'license_plates' => $licensePlateRepository->findAll(),
+            'license_plates' => $licensePlateRepository->findBy(['user' => $this->getUser()]),
         ]);
     }
+
+//    #[Route('/cars', name: 'user_license_plate_index', methods: ['GET'])]
+//    public function user_cars(LicensePlateRepository $licensePlateRepository): Response
+//    {
+//        //dd($this->getUser());
+//        return $this->render('license_plate/index.html.twig', [
+//            'license_plates' => $licensePlateRepository->findBy(['user' => $this->getUser()]),
+//        ]);
+//    }
 
     #[Route('/new', name: 'license_plate_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
