@@ -6,6 +6,7 @@ use App\Form\UserType;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,7 +44,7 @@ class SecurityController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher) : Response
+    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, MailerController $mailerController, MailerInterface $mailer) : Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -51,19 +52,22 @@ class SecurityController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager = $this->getDoctrine()->getManager();
-            $user->setPassword($passwordHasher->hashPassword($user, $user->getPassword()));
+            $password = substr(sha1(time()), 0, 8);
+            $user->setPassword($passwordHasher->hashPassword($user, $password));
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // login the user after registration
-            $token = new UsernamePasswordToken($user, null, 'main',$user->getRoles());
-            $this->get('security.token_storage')->setToken($token);
-            $this->get('session')->set('_security_main', serialize($token));
+            return $mailerController->sendEmail($mailer, $user, $password);
 
-//            $event = new InteractiveLoginEvent($request, $token);
-//            $this->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+//            // login the user after registration
+//            $token = new UsernamePasswordToken($user, null, 'main',$user->getRoles());
+//            $this->get('security.token_storage')->setToken($token);
+//            $this->get('session')->set('_security_main', serialize($token));
+//
+////            $event = new InteractiveLoginEvent($request, $token);
+////            $this->get("event_dispatcher")->dispatch("security.interactive_login", $event);
 
-            return $this->redirectToRoute('app_login');
+            //return $this->redirectToRoute('app_login');
         }
 
         return $this->render('user/new.html.twig', [
