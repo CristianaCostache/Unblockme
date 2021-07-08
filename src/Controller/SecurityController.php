@@ -57,15 +57,7 @@ class SecurityController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
-            $mailer->sendEmail($user, $password);
-
-//            // login the user after registration
-//            $token = new UsernamePasswordToken($user, null, 'main',$user->getRoles());
-//            $this->get('security.token_storage')->setToken($token);
-//            $this->get('session')->set('_security_main', serialize($token));
-//
-////            $event = new InteractiveLoginEvent($request, $token);
-////            $this->get("event_dispatcher")->dispatch("security.interactive_login", $event);
+            $mailer->sendRegistrationEmail($user, $password);
 
             return $this->redirectToRoute('app_login');
         }

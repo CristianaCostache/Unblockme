@@ -27,6 +27,11 @@ class LicensePlate
      */
     private $user;
 
+    public function __toString(): string
+    {
+        return $this->license_plate;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

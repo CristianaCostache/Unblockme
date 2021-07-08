@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\LicensePlate;
 use App\Form\LicensePlateType;
 use App\Repository\LicensePlateRepository;
+use App\Service\MailerService;
+use App\Service\ActivityService;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,24 +24,44 @@ class LicensePlateController extends AbstractController
         ]);
     }
 
-//    #[Route('/cars', name: 'user_license_plate_index', methods: ['GET'])]
-//    public function user_cars(LicensePlateRepository $licensePlateRepository): Response
-//    {
-//        //dd($this->getUser());
-//        return $this->render('license_plate/index.html.twig', [
-//            'license_plates' => $licensePlateRepository->findBy(['user' => $this->getUser()]),
-//        ]);
-//    }
-
+    /**
+     * @throws NonUniqueResultException
+     */
     #[Route('/new', name: 'license_plate_new', methods: ['GET', 'POST'])]
-    public function new(Request $request): Response
+    public function new(Request $request, ActivityService $activity, MailerService $mailer, LicensePlateRepository $licensePlateRepository): Response
     {
         $licensePlate = new LicensePlate();
         $form = $this->createForm(LicensePlateType::class, $licensePlate);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $entry = $licensePlateRepository->findOneBy(['license_plate' => $licensePlate->getLicensePlate()]);
             $entityManager = $this->getDoctrine()->getManager();
+            if($entry and !$entry->getUser())
+            {
+                $entry->setUser($this->getUser());
+                $entityManager->persist($entry);
+                $entityManager->flush();
+
+                $blocker = $activity->whoBlockedMe($licensePlate->getLicensePlate());
+                if($blocker)
+                {
+                    $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $blocker]);
+                    $mailer->sendBlockeeEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
+                                                $entry->getUser(), $entry->getLicensePlate());
+                }
+
+                $blockee = $activity->iveBlockedSomebody($licensePlate->getLicensePlate());
+                if($blockee)
+                {
+                    $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $blockee]);
+                    $mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+                        $entry->getUser(), $entry->getLicensePlate());
+                }
+                return $this->redirectToRoute('license_plate_index');
+            }
+
             $licensePlate->setUser($this->getUser());
             $entityManager->persist($licensePlate);
             $entityManager->flush();
