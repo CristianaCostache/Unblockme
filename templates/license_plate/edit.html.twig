@@ -6,8 +6,7 @@
     <h1>Edit LicensePlate</h1>
 
     {{ include('license_plate/_form.html.twig', {'button_label': 'Update'}) }}
-
-    <a href="{{ path('license_plate_index') }}">back to list</a>
-
-    {{ include('license_plate/_delete_form.html.twig') }}
+    {{ include('license_plate/_delete_form.html.twig', {'button_label': 'Delete'}) }}
+    <br>
+    <button onclick="location.href='/license/plate'" type="button" class="btn btn-secondary">Back to my cars</button>
 {% endblock %}

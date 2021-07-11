@@ -3,9 +3,10 @@
 {% block title %}New LicensePlate{% endblock %}
 
 {% block body %}
-    <h1>Create new LicensePlate</h1>
+    <h1>Add new car</h1>
 
     {{ include('license_plate/_form.html.twig') }}
 
-    <a href="{{ path('license_plate_index') }}">back to list</a>
+    <br>
+    <button onclick="location.href='/license/plate'" type="button" class="btn btn-secondary">Back to my cars</button>
 {% endblock %}

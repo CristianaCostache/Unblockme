@@ -57,6 +57,8 @@ class SecurityController extends AbstractController
             $entityManager->persist($user);
             $entityManager->flush();
 
+            $this->addFlash('info', 'Successful register! Check your email for the password!');
+
             $mailer->sendRegistrationEmail($user, $password);
 
             return $this->redirectToRoute('app_login');

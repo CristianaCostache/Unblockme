@@ -15,10 +15,16 @@
     {% endif %}
 
     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <label for="inputEmail">Email</label>
-    <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-    <label for="inputPassword">Password</label>
-    <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+
+    <div class="form-floating mb-3">
+        <input type="email" value="{{ last_username }}" name="email" class="form-control" id="inputEmail" autocomplete="email" required autofocus placeholder="name@example.com">
+        <label for="floatingInput">Email address</label>
+    </div>
+
+    <div class="form-floating">
+        <input type="password" name="password" class="form-control" id="floatingPassword" autocomplete="current-password" required placeholder="Password">
+        <label for="floatingPassword">Password</label>
+    </div>
 
     <input type="hidden" name="_csrf_token"
            value="{{ csrf_token('authenticate') }}"
@@ -34,12 +40,14 @@
             </label>
         </div>
     #}
-
-    <button class="btn btn-lg btn-primary" type="submit">
+    <br>
+    <button class="btn btn-success" type="submit">
         Sign in
     </button>
-
-    <div><a href="{{ path('app_register') }}">Register</a></div>
-
+    <br>
+    <div>
+    <h1 class="h3 mb-3 font-weight-normal">Don't have an account?</h1>
+        <button onclick="location.href='/register'" type="button" class="btn btn-success">Register</button>
+    </div>
 </form>
 {% endblock %}

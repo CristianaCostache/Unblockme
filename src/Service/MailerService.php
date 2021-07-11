@@ -44,49 +44,31 @@ class MailerService
         $this->mailer->send($email);
     }
 
-    public function sendBlockeeEmail(User $blocker, string $blockerLicensePlate,
-                                     User $blockee, string $blockeeLicensePlate)
+    /**
+     * @param User $reporterUser
+     * @param string $reporterLicensePlate
+     * @param User $reportedUser
+     * @param string $reportedLicensePlate
+     * @param string $template
+     * @throws TransportExceptionInterface
+     */
+    public function sendReportEmail(User $reporterUser, string $reporterLicensePlate,
+                                    User $reportedUser, string $reportedLicensePlate, string $template)
     {
         $email = (new TemplatedEmail())
-            ->from('notification@unblockme.com')
-            ->to($blockee->getUserIdentifier())
-            //->cc('cc@example.com')
-            //->bcc('bcc@example.com')
-            //->replyTo('fabien@example.com')
-            //->priority(Email::PRIORITY_HIGH)
-            ->subject('Somebody blocked you')
-            ->htmlTemplate('mailer/blockeeNotification.html.twig')
+            ->from('report@unblockme.com')
+            ->to($reportedUser->getUserIdentifier())
+            ->subject('Report notification')
+            ->htmlTemplate('mailer/' . $template . 'Notification.html.twig')
 
             // pass variables (name => value) to the template
             ->context([
-                'blocker' => $blocker->getUserIdentifier(),
-                'blockerLicensePlate' => $blockerLicensePlate,
-                'blockeeLicensePlate' => $blockeeLicensePlate,
+                'reporter' => $reporterUser->getUserIdentifier(),
+                'reporterLicensePlate' => $reporterLicensePlate,
+                'reportedLicensePlate' => $reportedLicensePlate,
             ]);
 
         $this->mailer->send($email);
     }
 
-    public function sendBlockerEmail(User $blockee, string $blockeeLicensePlate,
-                                     User $blocker, string $blockerLicensePlate)
-    {
-        $email = (new TemplatedEmail())
-            ->from('notification@unblockme.com')
-            ->to($blocker->getUserIdentifier())
-            //->cc('cc@example.com')
-            //->bcc('bcc@example.com')
-            //->replyTo('fabien@example.com')
-            //->priority(Email::PRIORITY_HIGH)
-            ->subject('You blocked somebody')
-            ->htmlTemplate('mailer/blockerNotification.html.twig')
-
-            // pass variables (name => value) to the template
-            ->context([
-                'blockee' => $blockee->getUserIdentifier(),
-                'blockeeLicensePlate' => $blockeeLicensePlate,
-                'blockerLicensePlate' => $blockerLicensePlate,
-            ]);
-
-        $this->mailer->send($email);
-    }
 }

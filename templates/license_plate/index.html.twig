@@ -1,26 +1,23 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}LicensePlate index{% endblock %}
+{% block title %}My cars{% endblock %}
 
 {% block body %}
-    <h1>LicensePlate index</h1>
+    <h1>My cars</h1>
 
-    <table class="table">
+    <table class="table table-sm">
         <thead>
             <tr>
-                <th>Id</th>
-                <th>License_plate</th>
-                <th>actions</th>
+                <th>License plates</th>
+                <th>Options</th>
             </tr>
         </thead>
         <tbody>
         {% for license_plate in license_plates %}
             <tr>
-                <td>{{ license_plate.id }}</td>
                 <td>{{ license_plate.licensePlate }}</td>
                 <td>
-                    <a href="{{ path('license_plate_show', {'id': license_plate.id}) }}">show</a>
-                    <a href="{{ path('license_plate_edit', {'id': license_plate.id}) }}">edit</a>
+                    <a class="btn btn-success btn-sm" href="{{ path('license_plate_edit', {'id': license_plate.id}) }}">edit</a>
                 </td>
             </tr>
         {% else %}
@@ -31,5 +28,5 @@
         </tbody>
     </table>
 
-    <a href="{{ path('license_plate_new') }}">Create new</a>
+    <button onclick="location.href='/license/plate/new'" type="button" class="btn btn-success">Add new car</button>
 {% endblock %}
