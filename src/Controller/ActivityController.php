@@ -45,14 +45,22 @@ class ActivityController extends AbstractController
             $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate'=>$activity->getBlockee()]);
             if($blockeeEntry)
             {
-                $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlocker()]);
-                $this->addFlash(
-                    'info',
-                    'Your report was register and an email was send to the blocker!'
-                );
-                $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), 'blockee');
-                $activity->setStatus(1);
-                //$mailer->sendBlockeeEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate());
+                if($blockeeEntry->getUser()) {
+                    $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlocker()]);
+                    $this->addFlash(
+                        'info',
+                        'Your report was register and an email was send to the blocker!'
+                    );
+                    $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), 'blockee');
+                    $activity->setStatus(1);
+                    //$mailer->sendBlockeeEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate());
+                }
+                else{
+                    $this->addFlash(
+                        'warning',
+                        'Your report was register but the blocker does not have an account! They will be contacted as soon as they are registered!'
+                    );
+                }
             }
             else
             {
@@ -108,15 +116,23 @@ class ActivityController extends AbstractController
             $blockerEntry = $licensePlateRepository->findOneBy(['license_plate'=>$activity->getBlocker()]);
             if($blockerEntry)
             {
-                $this->addFlash(
-                    'info',
-                    'Your report was register and an email was send to the blockee!'
-                );
-                $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlockee()]);
-                $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), $blockerEntry->getUser(), $blockerEntry->getLicensePlate(), 'blocker');
-                $activity->setStatus(1);
-                //$mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                  //                          $blockerEntry->getUser(), $blockerEntry->getLicensePlate());
+                if($blockerEntry->getUser()) {
+                    $this->addFlash(
+                        'info',
+                        'Your report was register and an email was send to the blockee!'
+                    );
+                    $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlockee()]);
+                    $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), $blockerEntry->getUser(), $blockerEntry->getLicensePlate(), 'blocker');
+                    $activity->setStatus(1);
+                    //$mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+                    //                          $blockerEntry->getUser(), $blockerEntry->getLicensePlate());
+                }
+                else{
+                    $this->addFlash(
+                        'warning',
+                        'Your report was register but the blockee does not have an account! They will be contacted as soon as they are registered!'
+                    );
+                }
             }
             else
             {

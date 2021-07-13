@@ -49,21 +49,26 @@ class LicensePlateController extends AbstractController
                 $entityManager->flush();
 
                 $blocker = $activity->whoBlockedMe($licensePlate->getLicensePlate());
+                //dd($blocker);
                 if($blocker)
                 {
-                    $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $blocker]);
-                    $messageReport = $blockerEntry->getLicensePlate() . " has blocked you";
-//                    $this->addFlash(
-//                        'notice',
-//                        $messageReport
-//                    );
-                    $message = 'The car with the license plate ' . $licensePlate->getLicensePlate() . ' has been added! ' . $messageReport;
-                    $this->addFlash(
-                        'warning',
-                        $message
-                    );
-                    $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
-                        $entry->getUser(), $entry->getLicensePlate(), 'blockee');
+                    foreach ($blocker as &$it)
+                    {
+                        $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $it->getBlocker()]);
+                        $messageReport = $blockerEntry->getLicensePlate() . " has blocked you";
+
+                        $message = 'The car with the license plate ' . $licensePlate->getLicensePlate() . ' has been added! ' . $messageReport;
+                        $this->addFlash(
+                            'warning',
+                            $message
+                        );
+                        $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
+                            $entry->getUser(), $entry->getLicensePlate(), 'blockee');
+                        $it->setStatus(1);
+                        $entityManager->persist($it);
+                        $entityManager->flush();
+                    }
+
 
                     //$mailer->sendBlockeeEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $entry->getUser(), $entry->getLicensePlate());
                 }
@@ -71,21 +76,27 @@ class LicensePlateController extends AbstractController
                 $blockee = $activity->iveBlockedSomebody($licensePlate->getLicensePlate());
                 if($blockee)
                 {
-                    $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $blockee]);
-                    $messageReport = "You blocked " . $blockeeEntry->getLicensePlate();
+                    foreach ($blockee as &$it) {
+                        $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $it->getBlockee()]);
+                        $messageReport = "You blocked " . $blockeeEntry->getLicensePlate();
 //                    $this->addFlash(
 //                        'notice',
 //                        $messageReport
 //                    );
-                    $message = 'The car with the license plate ' . $licensePlate->getLicensePlate() . ' has been added! ' . $messageReport;
-                    $this->addFlash(
-                        'danger',
-                        $message
-                    );
-                    $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                        $entry->getUser(), $entry->getLicensePlate(), 'blocker');
-                    //$mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                      //  $entry->getUser(), $entry->getLicensePlate());
+                        $message = 'The car with the license plate ' . $licensePlate->getLicensePlate() . ' has been added! ' . $messageReport;
+                        $this->addFlash(
+                            'danger',
+                            $message
+                        );
+                        $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+                            $entry->getUser(), $entry->getLicensePlate(), 'blocker');
+                        //$mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+                        //  $entry->getUser(), $entry->getLicensePlate());
+                        $it->setStatus(1);
+                        $entityManager->persist($it);
+                        $entityManager->flush();
+                    }
+
                 }
 
                 return $this->redirectToRoute('license_plate_index');
@@ -119,7 +130,7 @@ class LicensePlateController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'license_plate_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, LicensePlate $licensePlate, LicensePlateService $licensePlateService): Response
+    public function edit(Request $request, LicensePlate $licensePlate, LicensePlateService $licensePlateService, ActivityService $activityService): Response
     {
         $oldLicensePlate = $licensePlate->getLicensePlate();
         $message = 'Car ' . $licensePlate->getLicensePlate() . ' has been change to ';
@@ -127,7 +138,7 @@ class LicensePlateController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
+            //$licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
             $newLicensePlate = $licensePlateService->normalizeLicensePlate($licensePlate);
 
             if($oldLicensePlate == $newLicensePlate)
@@ -139,6 +150,19 @@ class LicensePlateController extends AbstractController
                 );
                 return $this->redirectToRoute('license_plate_index');
             }
+
+            $blocker = $activityService->iveBlockedSomebody($oldLicensePlate);
+            $blockee = $activityService->whoBlockedMe($oldLicensePlate);
+
+            if($blockee != null || $blocker != null)
+            {
+                $this->addFlash(
+                    'warning',
+                    'You cant change your license plate!'
+                );
+                return $this->redirectToRoute('license_plate_index');
+            }
+
             $licensePlate->setLicensePlate($newLicensePlate);
             $message = $message . $licensePlate->getLicensePlate() . '!';
             $this->addFlash(
@@ -157,8 +181,21 @@ class LicensePlateController extends AbstractController
     }
 
     #[Route('/{id}', name: 'license_plate_delete', methods: ['POST'])]
-    public function delete(Request $request, LicensePlate $licensePlate): Response
+    public function delete(Request $request, LicensePlate $licensePlate, ActivityService $activityService): Response
     {
+        $oldLicensePlate = $licensePlate->getLicensePlate();
+        $blocker = $activityService->iveBlockedSomebody($oldLicensePlate);
+        $blockee = $activityService->whoBlockedMe($oldLicensePlate);
+
+        if($blockee != null || $blocker != null)
+        {
+            $this->addFlash(
+                'warning',
+                'You cant delete your license plate!'
+            );
+            return $this->redirectToRoute('license_plate_index');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$licensePlate->getId(), $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($licensePlate);

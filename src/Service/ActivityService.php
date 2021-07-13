@@ -6,7 +6,6 @@ namespace App\Service;
 use App\Entity\Activity;
 use App\Repository\ActivityRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\NonUniqueResultException;
 
 class ActivityService
 {
@@ -27,31 +26,29 @@ class ActivityService
 
     /**
      * @param string $licensePlate
-     * @return string
-     * @throws NonUniqueResultException
+     * @return array|null
      */
-    public function iveBlockedSomebody(string $licensePlate): string
+    public function iveBlockedSomebody(string $licensePlate): ?array
     {
-        $blocker = $this->activityRepo->findByBlocker($licensePlate);
-
-        if ($blocker instanceof Activity){
-            return $blocker->getBlockee();
+        $blockees = $this->activityRepo->findByBlocker($licensePlate);
+        if(count($blockees) == 0)
+        {
+            return null;
         }
-        return '';
+        return $blockees;
     }
 
     /**
      * @param string $licensePlate
-     * @return string|null
-     * @throws NonUniqueResultException
+     * @return array|null
      */
-    public function whoBlockedMe(string $licensePlate): ?string
+    public function whoBlockedMe(string $licensePlate): ?array
     {
-        $blocker = $this->activityRepo->findByBlockee($licensePlate);
-
-        if ($blocker instanceof Activity){
-            return $blocker->getBlocker();
+        $blockers = $this->activityRepo->findByBlockee($licensePlate);
+        if(count($blockers) == 0)
+        {
+            return null;
         }
-        return '';
+        return $blockers;
     }
 }
