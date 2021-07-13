@@ -5,14 +5,15 @@ namespace App\Controller;
 use App\Entity\LicensePlate;
 use App\Form\LicensePlateType;
 use App\Repository\LicensePlateRepository;
+use App\Service\LicensePlateService;
 use App\Service\MailerService;
 use App\Service\ActivityService;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\String\UnicodeString;
 
 #[Route('/license/plate')]
 class LicensePlateController extends AbstractController
@@ -26,19 +27,17 @@ class LicensePlateController extends AbstractController
     }
 
     /**
-     * @throws NonUniqueResultException|\Symfony\Component\Mailer\Exception\TransportExceptionInterface
+     * @throws NonUniqueResultException|TransportExceptionInterface
      */
     #[Route('/new', name: 'license_plate_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, ActivityService $activity, MailerService $mailer, LicensePlateRepository $licensePlateRepository): Response
+    public function new(Request $request, ActivityService $activity, MailerService $mailer, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService): Response
     {
         $licensePlate = new LicensePlate();
         $form = $this->createForm(LicensePlateType::class, $licensePlate);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-
-            $validLicensePlate = (new UnicodeString($licensePlate->getLicensePlate()))->camel()->upper();
-            $licensePlate->setLicensePlate($validLicensePlate);
+            $licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
 
             $entry = $licensePlateRepository->findOneBy(['license_plate' => $licensePlate->getLicensePlate()]);
             $entityManager = $this->getDoctrine()->getManager();
@@ -65,6 +64,7 @@ class LicensePlateController extends AbstractController
                     );
                     $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
                         $entry->getUser(), $entry->getLicensePlate(), 'blockee');
+
                     //$mailer->sendBlockeeEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $entry->getUser(), $entry->getLicensePlate());
                 }
 
@@ -119,7 +119,7 @@ class LicensePlateController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'license_plate_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, LicensePlate $licensePlate): Response
+    public function edit(Request $request, LicensePlate $licensePlate, LicensePlateService $licensePlateService): Response
     {
         $oldLicensePlate = $licensePlate->getLicensePlate();
         $message = 'Car ' . $licensePlate->getLicensePlate() . ' has been change to ';
@@ -127,20 +127,10 @@ class LicensePlateController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $validLicensePlate = (new UnicodeString($licensePlate->getLicensePlate()))->camel()->upper();
-            if($oldLicensePlate != $validLicensePlate)
-            {
-                $licensePlate->setLicensePlate($validLicensePlate);
-                $message = $message . $licensePlate->getLicensePlate() . '!';
-                $this->addFlash(
-                    'success',
-                    $message
-                );
+            $licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
+            $newLicensePlate = $licensePlateService->normalizeLicensePlate($licensePlate);
 
-                $this->getDoctrine()->getManager()->flush();
-                return $this->redirectToRoute('license_plate_index');
-            }
-            else
+            if($oldLicensePlate == $newLicensePlate)
             {
                 $message = 'You insert the same license plate!';
                 $this->addFlash(
@@ -149,6 +139,15 @@ class LicensePlateController extends AbstractController
                 );
                 return $this->redirectToRoute('license_plate_index');
             }
+            $licensePlate->setLicensePlate($newLicensePlate);
+            $message = $message . $licensePlate->getLicensePlate() . '!';
+            $this->addFlash(
+                'success',
+                $message
+            );
+
+            $this->getDoctrine()->getManager()->flush();
+            return $this->redirectToRoute('license_plate_index');
         }
 
         return $this->render('license_plate/edit.html.twig', [

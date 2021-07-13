@@ -4,6 +4,8 @@ namespace App\Form;
 
 use App\Entity\Activity;
 use App\Entity\LicensePlate;
+use App\Repository\LicensePlateRepository;
+use App\Service\LicensePlateService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -17,33 +19,29 @@ class BlockeeType extends AbstractType
 {
     private $security;
     private $em;
+    private $licensePlateService;
 
-    public function __construct(Security $security, EntityManagerInterface $em)
+    public function __construct(Security $security, EntityManagerInterface $em, LicensePlateService $licensePlateService)
     {
         $this->security = $security;
         $this->em = $em;
+        $this->licensePlateService = $licensePlateService;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $licensePlateRepository = $this->em->getRepository('App:LicensePlate');
-        //dd($licensePlateRepository);
-        $cars = $licensePlateRepository->findBy(['user' => $this->security->getUser()]);
-        //dd($cars);
-        if(count($cars) == 1)
+        if($this->licensePlateService->countLicensePlates($this->security->getUser()) == 1)
         {
-            $place = $cars[0].'';
-            $builder->add('blockee', TextType::class, array('disabled' => true, 'attr' => array('placeholder' => $place)));
+            $firstLicensePlate = $this->licensePlateService->getFirstLicensePlate($this->security->getUser());
+            $builder->add('blockee', TextType::class, array('disabled' => true, 'attr' => array('placeholder' => $firstLicensePlate)));
         }
         else
         {
             $builder
                 ->add('blockee', EntityType::class, [
                     'class' => LicensePlate::class,
-                    'query_builder' => function (EntityRepository $er) {
-                        return $er->createQueryBuilder('u')
-                            ->andWhere('u.user = :val')
-                            ->setParameter('val', $this->security->getUser());
+                    'query_builder' => function (LicensePlateRepository $er) {
+                        return $er->findByUser($this->security->getUser());
                     },
                     'choice_label' => 'license_plate',
                 ]);

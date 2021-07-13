@@ -10,11 +10,11 @@
 
 <div class="text-center">
     <div class="btn-group-vertical">
-        <button onclick="location.href='/license/plate'" type="button" class="btn btn-success btn-lg">My cars</button>
+        <a class="btn btn-success btn-lg" href="{{ path('license_plate_index') }}">My cars</a>
         <br>
-        <button onclick="location.href='/ive_blocked_somebody'" type="button" class="btn btn-danger btn-lg">I've Block Somebody</button>
+        <a class="btn btn-danger btn-lg" href="{{ path('iblocked') }}">I've Block Somebody</a>
         <br>
-        <button onclick="location.href='/who_blocked_me'" type="button" class="btn btn-primary btn-lg">Who Blocked Me</button>
+        <a class="btn btn-primary btn-lg" href="{{ path('whoblocked') }}">Who Blocked Me</a>
     </div>
 </div>
 
