@@ -158,7 +158,7 @@ class LicensePlateController extends AbstractController
             {
                 $this->addFlash(
                     'warning',
-                    'You cant change your license plate!'
+                    'You cant change your license plate because it is part of an activity report!!'
                 );
                 return $this->redirectToRoute('license_plate_index');
             }
@@ -191,7 +191,7 @@ class LicensePlateController extends AbstractController
         {
             $this->addFlash(
                 'warning',
-                'You cant delete your license plate!'
+                'You cannot delete your license plate because it is part of an activity report!'
             );
             return $this->redirectToRoute('license_plate_index');
         }

@@ -33,17 +33,14 @@
 </nav>
 
 <nav class="navbar sticky-top navbar-dark bg-success navbar-expand-md bg-faded justify-content-center" style="padding: 10px;">
-    <a href="/" class="navbar-brand d-flex w-10 mr-auto">UnblockMe</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsingNavbar3">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="navbar-collapse collapse w-100" id="collapsingNavbar3">
+    <a href="/" class="navbar-brand d-flex w-10 mr-auto">🚘 UnblockMe</a>
+    <div class="navbar-collapse" id="collapsingNavbar3">
         <ul class="nav navbar-nav ml-auto w-100 justify-content-end">
             {% if app.user is not null %}
                 <li class="nav-item">
                     <div class="dropdown">
                         <a class="btn btn-success dropdown-toggle nav-link" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            My profile
+                            🙍‍♂️ My profile
                         </a>
                         <div class="dropdown-menu" style="right: 0; left: auto;" aria-labelledby="dropdownMenuButton">
                             <a class="dropdown-item">{{ app.user.username }}</a>

@@ -15,7 +15,7 @@
         <tbody>
         {% for license_plate in license_plates %}
             <tr>
-                <td>{{ license_plate.licensePlate }}</td>
+                <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ license_plate.licensePlate }}</td>
                 <td>
                     <a class="btn btn-success btn-sm" href="{{ path('license_plate_edit', {'id': license_plate.id}) }}">edit</a>
                 </td>
@@ -28,5 +28,5 @@
         </tbody>
     </table>
 
-    <button onclick="location.href='/license/plate/new'" type="button" class="btn btn-success">Add new car</button>
+    <a href="{{ path('license_plate_new') }}" type="button" class="btn btn-success">Add new car</a>
 {% endblock %}
