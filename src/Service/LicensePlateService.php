@@ -54,4 +54,18 @@ class LicensePlateService
             return $firstLicensePlate->getLicensePlate();
         return null;
     }
+
+    /**
+     * @param User $user
+     * @return array|null
+     */
+    public function getAllLicensePlates(User $user): ?array
+    {
+        $allLicensePlates = $this->licensePlateRepo->findBy(['user' => $user]);
+        foreach ($allLicensePlates as &$licensePlates)
+        {
+            $licensePlates = $licensePlates->getLicensePlate();
+        }
+        return $allLicensePlates;
+    }
 }

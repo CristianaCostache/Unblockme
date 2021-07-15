@@ -8,7 +8,6 @@ use App\Repository\LicensePlateRepository;
 use App\Service\LicensePlateService;
 use App\Service\MailerService;
 use App\Service\ActivityService;
-use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +26,7 @@ class LicensePlateController extends AbstractController
     }
 
     /**
-     * @throws NonUniqueResultException|TransportExceptionInterface
+     * @throws TransportExceptionInterface
      */
     #[Route('/new', name: 'license_plate_new', methods: ['GET', 'POST'])]
     public function new(Request $request, ActivityService $activity, MailerService $mailer, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService): Response
@@ -40,6 +39,15 @@ class LicensePlateController extends AbstractController
             $licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
 
             $entry = $licensePlateRepository->findOneBy(['license_plate' => $licensePlate->getLicensePlate()]);
+            if($entry && $entry->getUser() == $this->getUser())
+            {
+                $this->addFlash(
+                    'warning',
+                    'You already have this car!'
+                );
+                return $this->redirectToRoute('license_plate_index');
+            }
+
             $entityManager = $this->getDoctrine()->getManager();
             //$messageReport = '';
             if($entry and !$entry->getUser())
@@ -130,7 +138,7 @@ class LicensePlateController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'license_plate_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, LicensePlate $licensePlate, LicensePlateService $licensePlateService, ActivityService $activityService): Response
+    public function edit(Request $request, LicensePlate $licensePlate, LicensePlateService $licensePlateService, ActivityService $activityService, LicensePlateRepository $licensePlateRepository): Response
     {
         $oldLicensePlate = $licensePlate->getLicensePlate();
         $message = 'Car ' . $licensePlate->getLicensePlate() . ' has been change to ';
@@ -147,6 +155,16 @@ class LicensePlateController extends AbstractController
                 $this->addFlash(
                     'warning',
                     $message
+                );
+                return $this->redirectToRoute('license_plate_index');
+            }
+
+            $entry = $licensePlateRepository->findOneBy(['license_plate' => $newLicensePlate, 'user' => $this->getUser()]);
+            if($entry)
+            {
+                $this->addFlash(
+                    'warning',
+                    'You already have this car!'
                 );
                 return $this->redirectToRoute('license_plate_index');
             }

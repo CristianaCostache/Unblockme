@@ -46,8 +46,9 @@
     </button>
     <br>
     <div>
+        <br>
     <h1 class="h3 mb-3 font-weight-normal">Don't have an account?</h1>
-        <button onclick="location.href='/register'" type="button" class="btn btn-success">Register</button>
+        <a  href = "{{ path('app_register') }}" class="btn btn-success">Register</a>
     </div>
 </form>
 {% endblock %}

@@ -4,8 +4,10 @@
 namespace App\Service;
 
 use App\Entity\Activity;
+use App\Entity\User;
 use App\Repository\ActivityRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use mysql_xdevapi\Result;
 
 class ActivityService
 {
@@ -49,6 +51,30 @@ class ActivityService
         {
             return null;
         }
+        return $blockers;
+    }
+
+    /**
+     * @param User $user
+     * @param LicensePlateService $licensePlateService
+     * @return array|null
+     */
+    public function allMyBlockees(User $user, LicensePlateService $licensePlateService): ?array
+    {
+        $allLicensePlates = $licensePlateService->getAllLicensePlates($user);
+        $blockees = $this->activityRepo->findBy(['blocker' => $allLicensePlates]);
+        return $blockees;
+    }
+
+    /**
+     * @param User $user
+     * @param LicensePlateService $licensePlateService
+     * @return array|null
+     */
+    public function allMyBlockers(User $user, LicensePlateService $licensePlateService): ?array
+    {
+        $allLicensePlates = $licensePlateService->getAllLicensePlates($user);
+        $blockers = $this->activityRepo->findBy(['blockee' => $allLicensePlates]);
         return $blockers;
     }
 }

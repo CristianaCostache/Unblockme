@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My cars{% endblock %}
+
+{% block body %}
+<style>
+    .table-hover1 tbody tr:hover td, .table-hover tbody tr:hover th {
+        background-color: #fff3cd;
+    }
+    .table-hover2 tbody tr:hover td, .table-hover tbody tr:hover th {
+        background-color: #f8d7da;
+    }
+</style>
+    <h1>My activities</h1>
+
+    <h3>I'm the blockee</h3>
+    <table class="table table-sm table-hover1">
+        <thead>
+        <tr class="table-warning">
+            <th>Index</th>
+            <th>My car</th>
+            <th>Blocker</th>
+            <th>Option</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for activity in activities_blockers %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ activity.blockee }}</td>
+                <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ activity.blocker }}</td>
+                <td>
+                    {{ include('activity/_delete_form.html.twig', {'button_label': 'Delete'}) }}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+<br>
+    <h3>I'm the blocker</h3>
+    <table class="table table-sm table-hover2">
+        <thead>
+            <tr class="table-danger">
+                <th>Index</th>
+                <th>My car</th>
+                <th>Blockee</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for activity in activities_blockees %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ activity.blocker }}</td>
+                <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ activity.blockee }}</td>
+                <td>
+
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">no records found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+{% endblock %}

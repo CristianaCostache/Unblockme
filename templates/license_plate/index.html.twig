@@ -3,18 +3,25 @@
 {% block title %}My cars{% endblock %}
 
 {% block body %}
+<style>
+    .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+        background-color: #3ddb92;
+    }
+</style>
     <h1>My cars</h1>
 
-    <table class="table table-sm">
+    <table class="table table-sm table-hover">
         <thead>
-            <tr>
+            <tr class="bg-success">
+                <th>Index</th>
                 <th>License plates</th>
-                <th>Options</th>
+                <th>Option</th>
             </tr>
         </thead>
         <tbody>
         {% for license_plate in license_plates %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ license_plate.licensePlate }}</td>
                 <td>
                     <a class="btn btn-success btn-sm" href="{{ path('license_plate_edit', {'id': license_plate.id}) }}">edit</a>
@@ -28,5 +35,5 @@
         </tbody>
     </table>
 
-    <a href="{{ path('license_plate_new') }}" type="button" class="btn btn-success">Add new car</a>
+    <a href="{{ path('license_plate_new') }}" type="button" class="btn btn-success">Add a new car</a>
 {% endblock %}

@@ -7,8 +7,10 @@ use App\Entity\LicensePlate;
 use App\Form\BlockeeType;
 use App\Form\BlockerType;
 use App\Repository\LicensePlateRepository;
+use App\Service\ActivityService;
 use App\Service\LicensePlateService;
 use App\Service\MailerService;
+use phpDocumentor\Reflection\Types\This;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,6 +47,18 @@ class ActivityController extends AbstractController
             $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate'=>$activity->getBlockee()]);
             if($blockeeEntry)
             {
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($activity);
+                try{
+                    $entityManager->flush();
+                }catch(\Exception $exception){
+                    $this->addFlash(
+                        'warning',
+                        'This report already exists!'
+                    );
+                    return $this->redirectToRoute('home');
+                }
+
                 if($blockeeEntry->getUser()) {
                     $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlocker()]);
                     $this->addFlash(
@@ -116,6 +130,18 @@ class ActivityController extends AbstractController
             $blockerEntry = $licensePlateRepository->findOneBy(['license_plate'=>$activity->getBlocker()]);
             if($blockerEntry)
             {
+                $entityManager = $this->getDoctrine()->getManager();
+                $entityManager->persist($activity);
+                try{
+                    $entityManager->flush();
+                }catch(\Exception $exception){
+                    $this->addFlash(
+                        'warning',
+                        'This report already exists!'
+                    );
+                    return $this->redirectToRoute('home');
+                }
+
                 if($blockerEntry->getUser()) {
                     $this->addFlash(
                         'info',
@@ -157,5 +183,32 @@ class ActivityController extends AbstractController
             'blocker' => $activity,
             'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/', name: 'activities_index')]
+    public function myActivities(Request $request, ActivityService $activityService, LicensePlateService $licensePlateService): Response
+    {
+        return $this->render('activity/index.html.twig', [
+            'activities_blockees' => $activityService->allMyBlockees($this->getUser(), $licensePlateService),
+            'activities_blockers' => $activityService->allMyBlockers($this->getUser(), $licensePlateService),
+        ]);
+    }
+
+    #[Route('/{blocker}', name: 'activity_delete')]
+    public function delete(Request $request, Activity $activity): Response
+    {
+        if ($this->isCsrfTokenValid('delete'.$activity->getBlocker(), $request->request->get('_token'))) {
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->remove($activity);
+            $entityManager->flush();
+
+            $message = 'The activity was solved!';
+            $this->addFlash(
+                'success',
+                $message
+            );
+        }
+
+        return $this->redirectToRoute('activities_index');
     }
 }
