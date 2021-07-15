@@ -8,5 +8,5 @@
     {{ include('license_plate/_form.html.twig', {'button_label': 'Update'}) }}
     {{ include('license_plate/_delete_form.html.twig', {'button_label': 'Delete'}) }}
     <br>
-    <button onclick="location.href='/license/plate'" type="button" class="btn btn-secondary">Back to my cars</button>
+    <a href ='{{ path('license_plate_index') }}' class="btn btn-secondary">Back to my cars</a>
 {% endblock %}

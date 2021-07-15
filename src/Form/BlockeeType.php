@@ -7,7 +7,6 @@ use App\Entity\LicensePlate;
 use App\Repository\LicensePlateRepository;
 use App\Service\LicensePlateService;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;

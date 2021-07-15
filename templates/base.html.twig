@@ -19,19 +19,6 @@
 </head>
 <body style="background-color: #fe8080">
 
-<nav>
-{% for label, messages in app.flashes %}
-    {% for message in messages%}
-        <div class="alert alert-{{ label }} alert-dismissible" role="alert">
-            <button type="button" class="close btn-close" data-dismiss="alert" aria-label="Close"></button>
-            <b>
-                {{ message }}
-            </b>
-        </div>
-    {%  endfor %}
-{% endfor %}
-</nav>
-
 <nav class="navbar sticky-top navbar-dark bg-success navbar-expand-md bg-faded justify-content-center" style="padding: 10px;">
     <a href="/" class="navbar-brand d-flex w-10 mr-auto">🚘 UnblockMe</a>
     <div class="navbar-collapse" id="collapsingNavbar3">
@@ -55,6 +42,18 @@
     </div>
 </nav>
 
+<nav>
+    {% for label, messages in app.flashes %}
+        {% for message in messages%}
+            <div class="alert alert-{{ label }} alert-dismissible" role="alert">
+                <button type="button" class="close btn-close" data-dismiss="alert" aria-label="Close"></button>
+                <b>
+                    {{ message }}
+                </b>
+            </div>
+        {%  endfor %}
+    {% endfor %}
+</nav>
 
 <div style="margin-left: 20%; margin-right: 20%; align-content: center; padding: 20px; background-color: #FFFFFF">
 {% block body %}{% endblock %}

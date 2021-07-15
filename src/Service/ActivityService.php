@@ -7,7 +7,6 @@ use App\Entity\Activity;
 use App\Entity\User;
 use App\Repository\ActivityRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use mysql_xdevapi\Result;
 
 class ActivityService
 {

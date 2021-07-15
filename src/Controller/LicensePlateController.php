@@ -87,10 +87,6 @@ class LicensePlateController extends AbstractController
                     foreach ($blockee as &$it) {
                         $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $it->getBlockee()]);
                         $messageReport = "You blocked " . $blockeeEntry->getLicensePlate();
-//                    $this->addFlash(
-//                        'notice',
-//                        $messageReport
-//                    );
                         $message = 'The car with the license plate ' . $licensePlate->getLicensePlate() . ' has been added! ' . $messageReport;
                         $this->addFlash(
                             'danger',
@@ -98,8 +94,6 @@ class LicensePlateController extends AbstractController
                         );
                         $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
                             $entry->getUser(), $entry->getLicensePlate(), 'blocker');
-                        //$mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                        //  $entry->getUser(), $entry->getLicensePlate());
                         $it->setStatus(1);
                         $entityManager->persist($it);
                         $entityManager->flush();
@@ -146,7 +140,6 @@ class LicensePlateController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            //$licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
             $newLicensePlate = $licensePlateService->normalizeLicensePlate($licensePlate);
 
             if($oldLicensePlate == $newLicensePlate)

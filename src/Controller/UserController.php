@@ -2,18 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Activity;
-use App\Entity\LicensePlate;
 use App\Entity\User;
-use App\Form\BlockeeType;
-use App\Form\BlockerType;
 use App\Form\ChangePasswordType;
-use App\Form\UserType;
-use App\Repository\LicensePlateRepository;
-use App\Service\LicensePlateService;
-use App\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -30,7 +21,6 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            //$oldPassword = $form->get('old_password')->getData();
             $newPassword = $form->get('new_password')->getData();
 
             $entityManager = $this->getDoctrine()->getManager();

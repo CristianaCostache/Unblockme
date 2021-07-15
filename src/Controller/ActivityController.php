@@ -10,7 +10,6 @@ use App\Repository\LicensePlateRepository;
 use App\Service\ActivityService;
 use App\Service\LicensePlateService;
 use App\Service\MailerService;
-use phpDocumentor\Reflection\Types\This;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -124,7 +123,6 @@ class ActivityController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
 
-            //$activity->setBlocker((new UnicodeString($activity->getBlocker()))->camel()->upper());
             $activity->setBlocker($licensePlateService->normalizeLicensePlate($activity->getBlocker()));
 
             $blockerEntry = $licensePlateRepository->findOneBy(['license_plate'=>$activity->getBlocker()]);
@@ -150,8 +148,6 @@ class ActivityController extends AbstractController
                     $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlockee()]);
                     $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), $blockerEntry->getUser(), $blockerEntry->getLicensePlate(), 'blocker');
                     $activity->setStatus(1);
-                    //$mailer->sendBlockerEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                    //                          $blockerEntry->getUser(), $blockerEntry->getLicensePlate());
                 }
                 else{
                     $this->addFlash(
