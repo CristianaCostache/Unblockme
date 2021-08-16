@@ -4,13 +4,25 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\ChangePasswordType;
+use App\Repository\LicensePlateRepository;
+use App\Service\ActivityService;
 use App\Service\LicensePlateService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\CsvEncoder;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 #[Route('/user')]
 class UserController extends AbstractController
@@ -70,5 +82,32 @@ class UserController extends AbstractController
 
         //dd($user);
         return $this->redirectToRoute('app_login');
+    }
+
+    #[Route('/export_data', name: 'export_data')]
+    public function exportData(Request $request, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService, ActivityService $activityService): Response
+    {
+        $encoders = [new XmlEncoder(), new CsvEncoder()];
+        $normalizers = [new ObjectNormalizer()];
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $csvContent = $serializer->serialize($this->getUser(), 'csv', [AbstractNormalizer::ATTRIBUTES => ['email', 'roles']]);
+        $filesystem = new Filesystem();
+        $filesystem->dumpFile('fileData.txt', $csvContent);
+        $csvContent = $serializer->serialize($licensePlateService->getAllLicensePlates($this->getUser()), 'csv', [AbstractNormalizer::ATTRIBUTES => ['licensePlate']]);
+        $filesystem->appendToFile('fileData.txt', $csvContent);
+        $csvContent = $serializer->serialize($activityService->allMyBlockees($this->getUser(), $licensePlateService), 'csv', [AbstractNormalizer::ATTRIBUTES => ['blocker', 'blockee']]);
+        $filesystem->appendToFile('fileData.txt', $csvContent);
+        $csvContent = $serializer->serialize($activityService->allMyBlockers($this->getUser(), $licensePlateService), 'csv', [AbstractNormalizer::ATTRIBUTES => ['blockee', 'blocker']]);
+        $filesystem->appendToFile('fileData.txt', $csvContent);
+
+        $file = 'fileData.txt';
+        $response = new BinaryFileResponse($file);
+        $response->headers->set('Content-Type', 'text/plain');
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'fileData.txt'
+        );
+        return $response;
     }
 }
