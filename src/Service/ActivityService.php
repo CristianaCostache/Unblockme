@@ -61,7 +61,7 @@ class ActivityService
     public function allMyBlockees(User $user, LicensePlateService $licensePlateService): ?array
     {
         $allLicensePlates = $licensePlateService->getAllLicensePlates($user);
-        $blockees = $this->activityRepo->findBy(['blocker' => $allLicensePlates]);
+        $blockees = $this->activityRepo->findBy(['blocker' => $allLicensePlates, 'status' => [0, 1, 2]]);
         return $blockees;
     }
 
@@ -73,7 +73,31 @@ class ActivityService
     public function allMyBlockers(User $user, LicensePlateService $licensePlateService): ?array
     {
         $allLicensePlates = $licensePlateService->getAllLicensePlates($user);
-        $blockers = $this->activityRepo->findBy(['blockee' => $allLicensePlates]);
+        $blockers = $this->activityRepo->findBy(['blockee' => $allLicensePlates, 'status' => [0, 1, 2]]);
         return $blockers;
+    }
+
+    /**
+     * @param Activity $activity
+     * @return float
+     */
+    public function getDurationBetweenUpdates(Activity $activity): float
+    {
+        return abs(strtotime(date('Y-m-d H:i:s')) - strtotime($activity->getCreatedAt()));
+    }
+
+    public function checkActivities()
+    {
+        $allActivities = $this->activityRepo->findAll();
+        //dd($allActivities);
+        foreach ($allActivities as &$activity)
+        {
+            $diff = $this->getDurationBetweenUpdates($activity);
+            if($diff > 10)
+            {
+                $activity->setStatus(2);
+            }
+        }
+        $this->em->flush();
     }
 }

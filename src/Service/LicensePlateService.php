@@ -6,7 +6,9 @@ namespace App\Service;
 use App\Entity\LicensePlate;
 use App\Entity\User;
 use App\Repository\LicensePlateRepository;
+use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
+use JetBrains\PhpStorm\Pure;
 
 class LicensePlateService
 {
@@ -67,5 +69,28 @@ class LicensePlateService
             $licensePlates = $licensePlates->getLicensePlate();
         }
         return $allLicensePlates;
+    }
+
+    /**
+     * @param LicensePlate $licensePlate
+     * @return float
+     */
+
+    public function getDurationBetweenUpdates(LicensePlate $licensePlate): float
+    {
+        return abs(strtotime(date('Y-m-d H:i:s')) - strtotime($licensePlate->getUpdatedAt()));
+    }
+
+    /**
+     * @param User $user
+     */
+    public function  removeUser(User $user)
+    {
+        $cars = $this->licensePlateRepo->findBy(['user' => $user]);
+        foreach ($cars as &$car)
+        {
+            $car->setUser(null);
+            $this->em->flush();
+        }
     }
 }

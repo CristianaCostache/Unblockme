@@ -34,6 +34,7 @@
                             <hr class="dropdown-divider">
                             <a class="dropdown-item" href="{{ path('change_password') }}">Change password</a>
                             <a class="dropdown-item" href="{{ path('app_logout') }}">Log out</a>
+                            {{ include('user/_delete_form.html.twig', {'button_label': 'Delete'}) }}
                         </div>
                     </div>
                 </li>
@@ -58,6 +59,17 @@
 <div style="margin-left: 20%; margin-right: 20%; align-content: center; padding: 20px; background-color: #FFFFFF">
 {% block body %}{% endblock %}
 </div>
+
+{% block footer %}
+<footer class="bg-light text-center text-lg-start fixed-bottom">
+    <div class="text-center p-3" style="background-color: #198754">
+        <div class="text-white">© {{ 'now'|date('Y') }} Copyright •
+            UnblockMe • All rights reserved</div>
+
+    </div>
+</footer>
+{% endblock %}
+
 
 </body>
 </html>

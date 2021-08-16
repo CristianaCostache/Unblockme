@@ -10,6 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="activity")
  * @ORM\Entity(repositoryClass=ActivityRepository::class)
+ * @ORM\HasLifecycleCallbacks
  */
 class Activity
 {
@@ -38,6 +39,22 @@ class Activity
      */
     private $status = '0';
 
+    /** @ORM\Column(name="created_at", type="string", length=255) */
+    private $createdAt;
+
+    /** @ORM\PrePersist */
+    public function doStuffOnPrePersist()
+    {
+        $this->createdAt = date('Y-m-d H:i:s');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
 
     public function getBlocker(): string
     {

@@ -184,6 +184,7 @@ class ActivityController extends AbstractController
     #[Route('/', name: 'activities_index')]
     public function myActivities(Request $request, ActivityService $activityService, LicensePlateService $licensePlateService): Response
     {
+        //dd($activityService->allMyBlockees($this->getUser(), $licensePlateService));
         return $this->render('activity/index.html.twig', [
             'activities_blockees' => $activityService->allMyBlockees($this->getUser(), $licensePlateService),
             'activities_blockers' => $activityService->allMyBlockers($this->getUser(), $licensePlateService),
@@ -195,7 +196,8 @@ class ActivityController extends AbstractController
     {
         if ($this->isCsrfTokenValid('delete'.$activity->getBlocker(), $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
-            $entityManager->remove($activity);
+            $activity->setStatus(3);
+            //$entityManager->remove($activity);
             $entityManager->flush();
 
             $message = 'The activity was solved!';

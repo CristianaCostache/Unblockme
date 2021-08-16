@@ -48,6 +48,7 @@
                 <th>Index</th>
                 <th>My car</th>
                 <th>Blockee</th>
+                <th>Option</th>
             </tr>
         </thead>
         <tbody>
@@ -56,9 +57,14 @@
                 <td>{{ loop.index }}</td>
                 <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ activity.blocker }}</td>
                 <td>{{ random(['🚗', '🚕', '🚙', '🚐', '🚘', '🚖']) }}  {{ activity.blockee }}</td>
-                <td>
+                {% if activity.status == 2 %}
+                    <td>
+                        {{ include('activity/_delete_form.html.twig', {'button_label': 'Delete'}) }}
+                    </td>
+                {% else %}
+                    <td></td>
+                {% endif %}
 
-                </td>
             </tr>
         {% else %}
             <tr>

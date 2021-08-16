@@ -70,11 +70,14 @@ class LicensePlateController extends AbstractController
                             'warning',
                             $message
                         );
-                        $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
-                            $entry->getUser(), $entry->getLicensePlate(), 'blockee');
-                        $it->setStatus(1);
-                        $entityManager->persist($it);
-                        $entityManager->flush();
+                        if($blockerEntry->getUser())
+                        {
+                            $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
+                                $entry->getUser(), $entry->getLicensePlate(), 'blockee');
+                            $it->setStatus(1);
+                            $entityManager->persist($it);
+                            $entityManager->flush();
+                        }
                     }
 
 
@@ -92,11 +95,14 @@ class LicensePlateController extends AbstractController
                             'danger',
                             $message
                         );
-                        $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                            $entry->getUser(), $entry->getLicensePlate(), 'blocker');
-                        $it->setStatus(1);
-                        $entityManager->persist($it);
-                        $entityManager->flush();
+                        if($blockeeEntry->getUser())
+                        {
+                            $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+                                $entry->getUser(), $entry->getLicensePlate(), 'blocker');
+                            $it->setStatus(1);
+                            $entityManager->persist($it);
+                            $entityManager->flush();
+                        }
                     }
 
                 }
@@ -169,7 +175,19 @@ class LicensePlateController extends AbstractController
             {
                 $this->addFlash(
                     'warning',
-                    'You cant change your license plate because it is part of an activity report!!'
+                    'You cant change your license plate because it is part of an activity report!'
+                );
+                return $this->redirectToRoute('license_plate_index');
+            }
+
+            $diff = $licensePlateService->getDurationBetweenUpdates($licensePlate);
+            //dd($diff->d);
+
+            if($diff < 86400)
+            {
+                $this->addFlash(
+                    'warning',
+                    'You can only change your license plate after one day!'
                 );
                 return $this->redirectToRoute('license_plate_index');
             }
