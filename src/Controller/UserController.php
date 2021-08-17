@@ -4,13 +4,11 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\ChangePasswordType;
-use App\Repository\LicensePlateRepository;
 use App\Service\ActivityService;
 use App\Service\LicensePlateService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -18,7 +16,6 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Encoder\XmlEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -85,7 +82,7 @@ class UserController extends AbstractController
     }
 
     #[Route('/export_data', name: 'export_data')]
-    public function exportData(Request $request, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService, ActivityService $activityService): Response
+    public function exportData(Request $request, LicensePlateService $licensePlateService, ActivityService $activityService): Response
     {
         $encoders = [new XmlEncoder(), new CsvEncoder()];
         $normalizers = [new ObjectNormalizer()];
@@ -110,4 +107,27 @@ class UserController extends AbstractController
         );
         return $response;
     }
+
+//    public function registerMarkupTags() {
+//        return [
+//            'functions' => [
+//                'gravatar'     => [ $this, 'getAvatar' ],
+//            ]
+//        ];
+//    }
+//
+//    public function getGravatar( $email, $s = 80, $d = 'mp', $r = 'g', $img = false, $atts = [] ) {
+//        $url = 'https://www.gravatar.com/avatar/';
+//        $url .= md5( strtolower( trim( $email ) ) );
+//        $url .= "?s=$s&d=$d&r=$r";
+//        if ( $img ) {
+//            $url = '<img src="' . $url . '"';
+//            foreach ( $atts as $key => $val ) {
+//                $url .= ' ' . $key . '="' . $val . '"';
+//            }
+//            $url .= ' />';
+//        }
+//
+//        return $url;
+//    }
 }
