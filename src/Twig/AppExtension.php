@@ -12,6 +12,7 @@ class AppExtension extends AbstractExtension
     {
         return [
             new TwigFunction('gravatar', [$this, 'getGravatar']),
+            new TwigFunction('gravatarName', [$this, 'getGravatarName']),
         ];
     }
 
@@ -41,5 +42,14 @@ class AppExtension extends AbstractExtension
         }
 
         return $url;
+    }
+
+    public function getGravatarName($email){
+        //$url = $this->getGravatar($email);
+        $url = 'https://www.gravatar.com/' . md5( strtolower( trim( $email ) ) ) . '.php';
+        $str = file_get_contents( $url);
+        $profile = unserialize( $str );
+        if ( is_array( $profile ) && isset( $profile['entry'] ) )
+            return $profile['entry'][0]['displayName'];
     }
 }

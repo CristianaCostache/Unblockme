@@ -27,7 +27,7 @@
                 <li class="nav-item">
                     <div class="dropdown">
                         <a class="btn btn-success dropdown-toggle nav-link" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <img src="{{ gravatar(app.user.email, 30) }}"/> My profile
+                            <img src="{{ gravatar(app.user.email, 30) }}"/> {{ gravatarName(app.user.email) }}
                         </a>
                         <div class="dropdown-menu" style="right: 0; left: auto;" aria-labelledby="dropdownMenuButton">
                             <a class="dropdown-item">{{ app.user.username }}</a>
