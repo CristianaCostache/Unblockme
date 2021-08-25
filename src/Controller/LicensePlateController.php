@@ -4,14 +4,15 @@ namespace App\Controller;
 
 use App\Entity\LicensePlate;
 use App\Form\LicensePlateType;
+use App\Message\ReportMessage;
 use App\Repository\LicensePlateRepository;
 use App\Service\LicensePlateService;
-use App\Service\MailerService;
 use App\Service\ActivityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/license/plate')]
@@ -29,7 +30,7 @@ class LicensePlateController extends AbstractController
      * @throws TransportExceptionInterface
      */
     #[Route('/new', name: 'license_plate_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, ActivityService $activity, MailerService $mailer, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService): Response
+    public function new(Request $request, ActivityService $activity, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService, MessageBusInterface $messageBus): Response
     {
         $licensePlate = new LicensePlate();
         $form = $this->createForm(LicensePlateType::class, $licensePlate);
@@ -37,6 +38,9 @@ class LicensePlateController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $licensePlate->setLicensePlate($licensePlateService->normalizeLicensePlate($licensePlate->getLicensePlate()));
+
+//            $messageBus->dispatch(new ReportMessage($this->getUser(), $licensePlate,
+//                $this->getUser(), $licensePlate, 'blockee'));
 
             $entry = $licensePlateRepository->findOneBy(['license_plate' => $licensePlate->getLicensePlate()]);
             if($entry && $entry->getUser() == $this->getUser())
@@ -72,8 +76,15 @@ class LicensePlateController extends AbstractController
                         );
                         if($blockerEntry->getUser())
                         {
-                            $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
-                                $entry->getUser(), $entry->getLicensePlate(), 'blockee');
+
+//                            $messageBus->dispatch(new ReportMessage($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
+//                                $entry->getUser(), $entry->getLicensePlate(), 'blockee'));
+//                            $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getUser(),
+//                                $entry->getUser(), $entry->getLicensePlate(), 'blockee');
+
+                            $messageBus->dispatch(new ReportMessage($blockerEntry->getUser(), $blockerEntry->getLicensePlate(),
+                                $entry->getUser(), $entry->getLicensePlate(), 'blockee'));
+
                             $it->setStatus(1);
                             $entityManager->persist($it);
                             $entityManager->flush();
@@ -97,8 +108,10 @@ class LicensePlateController extends AbstractController
                         );
                         if($blockeeEntry->getUser())
                         {
-                            $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
-                                $entry->getUser(), $entry->getLicensePlate(), 'blocker');
+//                            $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+//                                $entry->getUser(), $entry->getLicensePlate(), 'blocker');
+                            $messageBus->dispatch(new ReportMessage($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(),
+                                $entry->getUser(), $entry->getLicensePlate(), 'blocker'));
                             $it->setStatus(1);
                             $entityManager->persist($it);
                             $entityManager->flush();

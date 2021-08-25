@@ -4,10 +4,11 @@ namespace App\Controller;
 
 use App\Form\UserType;
 use App\Entity\User;
-use App\Service\MailerService;
+use App\Message\RegisterMessage;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,7 +45,7 @@ class SecurityController extends AbstractController
      * @Route("/register", name="app_register")
      * @throws TransportExceptionInterface
      */
-    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, MailerService $mailer) : Response
+    public function register(Request $request, UserPasswordHasherInterface $passwordHasher, MessageBusInterface $messageBus) : Response
     {
         $user = new User();
         $form = $this->createForm(UserType::class, $user);
@@ -59,7 +60,8 @@ class SecurityController extends AbstractController
 
             $this->addFlash('info', 'Successful register! Check your email for the password!');
 
-            $mailer->sendRegistrationEmail($user, $password);
+            //$mailer->sendRegistrationEmail($user, $password);
+            $messageBus->dispatch(new RegisterMessage($user, $password));
 
             return $this->redirectToRoute('app_login');
         }

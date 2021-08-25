@@ -63,7 +63,6 @@ class MailerService
 
             // pass variables (name => value) to the template
             ->context([
-                'reporter' => $reporterUser->getUserIdentifier(),
                 'reporterLicensePlate' => $reporterLicensePlate,
                 'reportedLicensePlate' => $reportedLicensePlate,
             ]);

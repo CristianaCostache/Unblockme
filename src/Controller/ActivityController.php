@@ -6,6 +6,7 @@ use App\Entity\Activity;
 use App\Entity\LicensePlate;
 use App\Form\BlockeeType;
 use App\Form\BlockerType;
+use App\Message\ReportMessage;
 use App\Repository\LicensePlateRepository;
 use App\Service\ActivityService;
 use App\Service\LicensePlateService;
@@ -13,13 +14,14 @@ use App\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/activity')]
 class ActivityController extends AbstractController
 {
     #[Route('/ive_blocked_somebody', name: 'iblocked')]
-    public function iveBlockedSomebody(Request $request, LicensePlateRepository $licensePlateRepository, MailerService $mailer,LicensePlateService $licensePlateService): Response
+    public function iveBlockedSomebody(Request $request, LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService, MessageBusInterface $messageBus, MailerService $mailer): Response
     {
         $activity = new Activity();
         $form = $this->createForm(BlockerType::class, $activity);
@@ -58,13 +60,15 @@ class ActivityController extends AbstractController
                     return $this->redirectToRoute('home');
                 }
 
-                if($blockeeEntry->getUser()) {
+                if($blockeeEntry->getUser()->getUserIdentifier()) {
                     $blockerEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlocker()]);
                     $this->addFlash(
                         'info',
                         'Your report was register and an email was send to the blocker!'
                     );
-                    $mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), 'blockee');
+                    //$mailer->sendReportEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), 'blockee');
+                    //dd($blockeeEntry->getUser());
+                    $messageBus->dispatch(new ReportMessage($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), 'blockee'));
                     $activity->setStatus(1);
                     //$mailer->sendBlockeeEmail($blockerEntry->getUser(), $blockerEntry->getLicensePlate(), $blockeeEntry->getUser(), $blockeeEntry->getLicensePlate());
                 }
@@ -101,7 +105,7 @@ class ActivityController extends AbstractController
     }
 
     #[Route('/who_blocked_me', name: 'whoblocked')]
-    public function whoBlockedMe(Request $request,LicensePlateRepository $licensePlateRepository, MailerService $mailer, LicensePlateService $licensePlateService): Response
+    public function whoBlockedMe(Request $request,LicensePlateRepository $licensePlateRepository, LicensePlateService $licensePlateService, MessageBusInterface $messageBus): Response
     {
         $activity = new Activity();
         $form = $this->createForm(BlockeeType::class, $activity);
@@ -140,13 +144,14 @@ class ActivityController extends AbstractController
                     return $this->redirectToRoute('home');
                 }
 
-                if($blockerEntry->getUser()) {
+                if($blockerEntry->getUser()->getUserIdentifier()) {
                     $this->addFlash(
                         'info',
                         'Your report was register and an email was send to the blockee!'
                     );
                     $blockeeEntry = $licensePlateRepository->findOneBy(['license_plate' => $activity->getBlockee()]);
-                    $mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), $blockerEntry->getUser(), $blockerEntry->getLicensePlate(), 'blocker');
+                    //$mailer->sendReportEmail($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), $blockerEntry->getUser(), $blockerEntry->getLicensePlate(), 'blocker');
+                    $messageBus->dispatch(new ReportMessage($blockeeEntry->getUser(), $blockeeEntry->getLicensePlate(), $blockerEntry->getUser(), $blockerEntry->getLicensePlate(), 'blocker'));
                     $activity->setStatus(1);
                 }
                 else{
